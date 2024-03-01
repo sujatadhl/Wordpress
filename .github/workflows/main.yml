@@ -19,7 +19,7 @@ jobs:
           ssh-add <(echo "$SSH_PRIVATE_KEY" )
           mkdir -p ~/.ssh
           chmod 700 ~/.ssh
-          ssh-keyscan $SERVER_HOST >> ~/.ssh/known_hosts
+          ssh-keyscan $HOST >> ~/.ssh/known_hosts
           chmod 644 ~/.ssh/known_hosts
           scp -r * root@$HOST:/var/www/html
     env:
