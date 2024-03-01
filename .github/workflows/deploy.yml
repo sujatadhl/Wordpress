@@ -1,28 +1,27 @@
-name: Build and Deploy
+name: Deploy to Droplet
+
 on:
   push:
     branches:
       - main
+
 jobs:
-  build-and-deploy:
+  deploy:
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        node-version: [12.x]
+
     steps:
-      - uses: actions/checkout@master
-      - name: Deploy
-        run: |
-          which ssh-agent || ( apt-get update -y && apt-get install openssh-client -y  )
-          which rsync || ( apt-get update -y && apt-get install rsync -y )
-          eval $(ssh-agent -s)
-          ssh-add <(echo "$SSH_KEY" | base64 --decode )
-          mkdir -p ~/.ssh
-          chmod 700 ~/.ssh
-          ssh-keyscan $SERVER_IP >> ~/.ssh/known_hosts
-          chmod 644 ~/.ssh/known_hosts
-          scp -r * root@$SERVER_IP:/var/www/html
-    env:
-      SSH_PRIVATE_KEY: ${{secrets.SSH_KEY}}
-      SERVER_IP: ${{secrets.SERVER_IP}}
-      CI: false
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Deploy to Droplet
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.SERVER_IP }}
+          
+          key: ${{ secrets.SSH_KEY }}
+          script: |
+            cd /var/www/html
+            git pull
+        env:
+          WP_ENV: production
+
